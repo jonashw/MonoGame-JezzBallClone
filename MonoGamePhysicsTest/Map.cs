@@ -38,14 +38,16 @@ namespace MonoGamePhysicsTest
                    && _tilesByRowsThenColumns[rowIndex, colIndex];
         }
 
-        public void ToggleAtCoordinates(float x, float y)
+        public bool HasTileIn(TileSlot index)
         {
-            int colIndex, rowIndex;
-            if (!TryNormalizeCoordinates(x, y, out colIndex, out rowIndex))
-            {
-                return;
-            }
-            _tilesByRowsThenColumns[rowIndex, colIndex] = !_tilesByRowsThenColumns[rowIndex, colIndex];
+            return _tilesByRowsThenColumns[index.RowIndex, index.ColumnIndex];
+        }
+
+        public Vector2 GetPositionOf(TileSlot slot)
+        {
+            return new Vector2(
+                slot.ColumnIndex*TileSize.X,
+                slot.RowIndex*TileSize.Y);
         }
 
         public bool TryNormalizeCoordinates(float x, float y, out int colIndex, out int rowIndex)
@@ -69,22 +71,9 @@ namespace MonoGamePhysicsTest
                    && _tilesByRowsThenColumns[rowIndex, colIndex];
         }
 
-        public void ToggleAtIndex(int colIndex, int rowIndex)
+        public void SetAt(TileSlot slot, bool hasTile)
         {
-            if (!indexInBounds(colIndex, rowIndex))
-            {
-                return;
-            }
-            _tilesByRowsThenColumns[rowIndex, colIndex] = !_tilesByRowsThenColumns[rowIndex, colIndex];
-        }
-
-        public void SetAtIndex(int colIndex, int rowIndex, bool hasTile)
-        {
-            if (!indexInBounds(colIndex, rowIndex))
-            {
-                return;
-            }
-            _tilesByRowsThenColumns[rowIndex, colIndex] = hasTile;
+            _tilesByRowsThenColumns[slot.RowIndex, slot.ColumnIndex] = hasTile;
         }
 
         private bool indexInBounds(int colIndex, int rowIndex)

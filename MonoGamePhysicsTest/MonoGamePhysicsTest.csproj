@@ -42,6 +42,7 @@
     <Compile Include="BallFactory.cs" />
     <Compile Include="Cursor.cs" />
     <Compile Include="CursorTextures.cs" />
+    <Compile Include="Divider.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Input\MouseEvents.cs" />
     <Compile Include="MapFactory.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="TileSlot.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

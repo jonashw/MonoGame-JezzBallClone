@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGamePhysicsTest.Physics;
+
 
 namespace MonoGamePhysicsTest
 {
@@ -13,40 +16,72 @@ namespace MonoGamePhysicsTest
         private readonly Vector2 _origin = new Vector2(10,10);
         private Vector2 _position;
         private readonly Map _map;
+        private readonly List<Divider> _dividers = new List<Divider>();
+        private readonly Texture2D _dividerTexture;
 
-        public Cursor(Map map, CursorTextures textures)
+        public Cursor(Map map, CursorTextures textures, Texture2D dividerTexture)
         {
             _map = map;
             _textures = textures;
+            _dividerTexture = dividerTexture;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_textures.Get(_state), _position, origin: _origin );
+            spriteBatch.Draw(getTexture(), _position, origin: _origin );
+            foreach (var d in _dividers)
+            {
+                d.Draw(spriteBatch);
+            }
         }
+
+        private readonly List<Divider> _dividersToRemove = new List<Divider>();
+        private void updateDividers(GameTime gameTime)
+        {
+            foreach (var d in _dividers)
+            {
+                switch (d.Update(gameTime))
+                {
+                    case DividerState.Done:
+                        _dividersToRemove.Add(d);
+                        break;
+                }
+            }
+            foreach (var d in _dividersToRemove)
+            {
+                _dividers.Remove(d);
+            }
+            _dividersToRemove.Clear();
+        }
+
         public void Update(GameTime gameTime)
         {
-            int colIndex, rowIndex;
+            updateDividers(gameTime);
             var mouse = Mouse.GetState();
-            if (!_map.TryNormalizeCoordinates(mouse.X, mouse.Y, out colIndex, out rowIndex))
+            var maybeNewSlot = TileSlot.TryGetForPosition(mouse.X, mouse.Y);
+            if (!maybeNewSlot.HasValue)
             {
                 return;
             }
-            _position.X = _map.TileSize.X * colIndex;
-            _position.Y = _map.TileSize.Y * rowIndex;
-            if (_map.HasTileAtIndex(colIndex, rowIndex))
+            var slot = maybeNewSlot.Value;
+            _position.X = _map.TileSize.X * slot.ColumnIndex;
+            _position.Y = _map.TileSize.Y * slot.RowIndex;
+
+
+            if (_map.HasTileIn(slot))
             {
                 _enabled = false;
                 return;
             }
+
             _enabled = true;
             switch (_state)
             {
                 case PlayDirection.Vertical:
                 case PlayDirection.Up:
                 case PlayDirection.Down:
-                    var canDown = !_map.HasTileAtIndex(colIndex, rowIndex + 1);
-                    var canUp = !_map.HasTileAtIndex(colIndex, rowIndex - 1);
+                    var canDown = !_map.HasTileAtIndex(slot.ColumnIndex, slot.RowIndex + 1);
+                    var canUp = !_map.HasTileAtIndex(slot.ColumnIndex, slot.RowIndex - 1);
                     if (canDown && canUp)
                     {
                         _state = PlayDirection.Vertical;
@@ -61,8 +96,8 @@ namespace MonoGamePhysicsTest
                 case PlayDirection.Horizontal:
                 case PlayDirection.Left:
                 case PlayDirection.Right:
-                    var canRight = colIndex + 1 < 128 && !_map.HasTileAtIndex(colIndex + 1, rowIndex);
-                    var canLeft = colIndex - 1 > 1 && !_map.HasTileAtIndex(colIndex - 1, rowIndex);
+                    var canRight = !_map.HasTileAtIndex(slot.ColumnIndex + 1, slot.RowIndex);
+                    var canLeft = !_map.HasTileAtIndex(slot.ColumnIndex - 1, slot.RowIndex);
                     if (canRight && canLeft)
                     {
                         _state = PlayDirection.Horizontal;
@@ -77,14 +112,34 @@ namespace MonoGamePhysicsTest
             }
         }
 
+        private Texture2D getTexture()
+        {
+            if (!_enabled)
+            {
+                return _textures.Disabled;
+            }
+            switch (_state)
+            {
+                case PlayDirection.Up: return _textures.Up;
+                case PlayDirection.Down: return _textures.Down;
+                case PlayDirection.Left: return _textures.Left;
+                case PlayDirection.Right: return _textures.Right;
+                case PlayDirection.Horizontal: return _textures.Horizontal;
+                case PlayDirection.Vertical: return _textures.Vertical;
+            }
+            throw new ArgumentException("Unable to return a cursor sprite for PlayDirection: " + _state);
+        }
+
         public void ToggleAxis()
         {
-            if (_state == PlayDirection.Vertical)
+            switch (_state)
             {
-                _state = PlayDirection.Horizontal;
-            } else if (_state == PlayDirection.Horizontal)
-            {
-                _state = PlayDirection.Vertical;
+                case PlayDirection.Vertical:
+                    _state = PlayDirection.Horizontal;
+                    break;
+                case PlayDirection.Horizontal:
+                    _state = PlayDirection.Vertical;
+                    break;
             }
         }
 
@@ -95,80 +150,62 @@ namespace MonoGamePhysicsTest
                 return;
             }
 
-            int colIndex, rowIndex;
-            if (!_map.TryNormalizeCoordinates(_position.X, _position.Y, out colIndex, out rowIndex))
+            var maybeSlot = TileSlot.TryGetForPosition(_position);
+            if (!maybeSlot.HasValue)
             {
                 return;
             }
+
+            var slot = maybeSlot.Value;
             switch (_state)
             {
                 case PlayDirection.Vertical:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerUp(colIndex,rowIndex);
-                    goDividerDown(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerUp(slot);
+                    goDividerDown(slot);
                     break;
                 case PlayDirection.Up:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerUp(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerUp(slot);
                     break;
                 case PlayDirection.Down:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerDown(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerDown(slot);
                     break;
                 case PlayDirection.Horizontal:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerLeft(colIndex,rowIndex);
-                    goDividerRight(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerLeft(slot);
+                    goDividerRight(slot);
                     break;
                 case PlayDirection.Left:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerLeft(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerLeft(slot);
                     break;
                 case PlayDirection.Right:
-                    _map.SetAtIndex(colIndex, rowIndex, true);
-                    goDividerRight(colIndex,rowIndex);
+                    _map.SetAt(slot, true);
+                    goDividerRight(slot);
                     break;
             }
         }
 
-        private void goDividerDown(int colIndex, int rowIndex)
+        private void goDividerDown(TileSlot slot)
         {
-            rowIndex ++;
-            while (!_map.HasTileAtIndex(colIndex, rowIndex))
-            {
-                _map.SetAtIndex(colIndex, rowIndex, true);
-                rowIndex ++;
-            }
+            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.Y, true, _dividerTexture ));
         }
 
-        private void goDividerUp(int colIndex, int rowIndex)
+        private void goDividerUp(TileSlot slot)
         {
-                rowIndex --;
-            while (!_map.HasTileAtIndex(colIndex, rowIndex))
-            {
-                _map.SetAtIndex(colIndex, rowIndex, true);
-                rowIndex --;
-            }
+            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.Y, false, _dividerTexture ));
         }
 
-        private void goDividerLeft(int colIndex, int rowIndex)
+        private void goDividerLeft(TileSlot slot)
         {
-            colIndex --;
-            while (!_map.HasTileAtIndex(colIndex, rowIndex))
-            {
-                _map.SetAtIndex(colIndex, rowIndex, true);
-                colIndex --;
-            }
+            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.X, false, _dividerTexture ));
         }
 
-        private void goDividerRight(int colIndex, int rowIndex)
+        private void goDividerRight(TileSlot slot)
         {
-            colIndex ++;
-            while (!_map.HasTileAtIndex(colIndex, rowIndex))
-            {
-                _map.SetAtIndex(colIndex, rowIndex, true);
-                colIndex ++;
-            }
+            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.X, true, _dividerTexture ));
         }
     }
 

@@ -23,19 +23,5 @@ namespace MonoGamePhysicsTest
             Vertical = vertical;
             Disabled = disabled;
         }
-
-        public Texture2D Get(PlayDirection direction)
-        {
-            switch (direction)
-            {
-                case PlayDirection.Up: return Up;
-                case PlayDirection.Down: return Down;
-                case PlayDirection.Left: return Left;
-                case PlayDirection.Right: return Right;
-                case PlayDirection.Horizontal: return Horizontal;
-                case PlayDirection.Vertical: return Vertical;
-            }
-            throw new ArgumentException("Unable to return a cursor sprite for PlayDirection: " + direction);
-        }
     }
 }

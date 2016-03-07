@@ -29,9 +29,11 @@ namespace MonoGamePhysicsTest.Physics
         public float Rotation { get { return _rotation; } }
         public void Update(GameTime gameTime)
         {
+            _rotation += 0.1f * (_rotateClockwise ? 1 : -1);
+
+            //Horizontal movement/collision
             var nextX = _position.X + _velocity.X;
             var nextXEdge = nextX + (_velocity.X > 0 ? _width : -_width)/2f;
-            //Horizontal collision
             if (_map.HasTileAtCoordinates(nextXEdge, _position.Y))
             {
                 _velocity.X = -_velocity.X;
@@ -41,7 +43,8 @@ namespace MonoGamePhysicsTest.Physics
             {
                 _position.X = nextX;
             }
-            //Vertical collision
+
+            //Vertical movement/collision
             var nextY = _position.Y + _velocity.Y;
             var nextYEdge = nextY + (_velocity.Y > 0 ? _height : -_height)/2f;
             if (_map.HasTileAtCoordinates(_position.X, nextYEdge))
@@ -53,7 +56,6 @@ namespace MonoGamePhysicsTest.Physics
             {
                 _position.Y = nextY;
             }
-            _rotation += 0.1f * (_rotateClockwise ? 1 : -1);
         }
 
         public enum Axis

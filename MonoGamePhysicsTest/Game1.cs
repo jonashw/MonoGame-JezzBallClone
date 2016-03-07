@@ -50,7 +50,8 @@ namespace MonoGamePhysicsTest
                 Content.Load<Texture2D>("Cursor-Right"),
                 Content.Load<Texture2D>("Cursor-Horizontal"),
                 Content.Load<Texture2D>("Cursor-Vertical"),
-                Content.Load<Texture2D>("Cursor-Disabled")));
+                Content.Load<Texture2D>("Cursor-Disabled")),
+                Content.Load<Texture2D>("Tile-GrayBlack"));
 
             _mouse.OnRightClick((x,y) => _cursor.ToggleAxis());
 
