@@ -43,7 +43,12 @@
     <Compile Include="Cursor.cs" />
     <Compile Include="CursorTextures.cs" />
     <Compile Include="Divider.cs" />
+    <Compile Include="DividerLeg.cs" />
+    <Compile Include="DividerLegState.cs" />
+    <Compile Include="DividerState.cs" />
+    <Compile Include="DividerTextures.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="Input\MouseEvents.cs" />
     <Compile Include="MapFactory.cs" />
     <Compile Include="Physics\BallPhyics.cs" />
@@ -51,6 +56,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="StringDrawer.cs" />
     <Compile Include="TileSlot.cs" />
   </ItemGroup>
   <ItemGroup>

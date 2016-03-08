@@ -18,6 +18,7 @@ namespace MonoGamePhysicsTest
         private Ball[] _balls;
         private readonly MouseEvents _mouse;
         private Cursor _cursor;
+        private StringDrawer _stringDrawer;
 
         public Game1()
         {
@@ -43,6 +44,7 @@ namespace MonoGamePhysicsTest
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _map = MapFactory.BasicRectangle(Content);
+            _stringDrawer = new StringDrawer(Content.Load<SpriteFont>("Consolas"));
             _cursor = new Cursor(_map, new CursorTextures(
                 Content.Load<Texture2D>("Cursor-Up"),
                 Content.Load<Texture2D>("Cursor-Down"),
@@ -51,7 +53,8 @@ namespace MonoGamePhysicsTest
                 Content.Load<Texture2D>("Cursor-Horizontal"),
                 Content.Load<Texture2D>("Cursor-Vertical"),
                 Content.Load<Texture2D>("Cursor-Disabled")),
-                Content.Load<Texture2D>("Tile-GrayBlack"));
+                Content.Load<Texture2D>("Tile-GrayBlack"),
+                _stringDrawer);
 
             _mouse.OnRightClick((x,y) => _cursor.ToggleAxis());
 

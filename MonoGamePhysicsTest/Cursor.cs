@@ -3,31 +3,33 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGamePhysicsTest.Physics;
-
 
 namespace MonoGamePhysicsTest
 {
     public class Cursor
     {
         private readonly CursorTextures _textures;
+        private readonly StringDrawer _stringDrawer;
         private PlayDirection _state = PlayDirection.Horizontal;
         private bool _enabled;
         private readonly Vector2 _origin = new Vector2(10,10);
         private Vector2 _position;
+        private TileSlot _slot;
         private readonly Map _map;
         private readonly List<Divider> _dividers = new List<Divider>();
         private readonly Texture2D _dividerTexture;
 
-        public Cursor(Map map, CursorTextures textures, Texture2D dividerTexture)
+        public Cursor(Map map, CursorTextures textures, Texture2D dividerTexture, StringDrawer stringDrawer)
         {
             _map = map;
             _textures = textures;
             _dividerTexture = dividerTexture;
+            _stringDrawer = stringDrawer;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
+            _stringDrawer.Draw(spriteBatch, string.Format("Cursor Position: {0}, {1}", _slot.ColumnIndex, _slot.RowIndex), new Vector2(20,20));
             spriteBatch.Draw(getTexture(), _position, origin: _origin );
             foreach (var d in _dividers)
             {
@@ -40,9 +42,12 @@ namespace MonoGamePhysicsTest
         {
             foreach (var d in _dividers)
             {
-                switch (d.Update(gameTime))
+                d.Update(gameTime);
+                switch (d.State)
                 {
-                    case DividerState.Done:
+                    case DividerState.TotalSuccess:
+                    case DividerState.TotalFailure:
+                    case DividerState.PartialSuccess:
                         _dividersToRemove.Add(d);
                         break;
                 }
@@ -64,6 +69,8 @@ namespace MonoGamePhysicsTest
                 return;
             }
             var slot = maybeNewSlot.Value;
+            _slot = slot;
+
             _position.X = _map.TileSize.X * slot.ColumnIndex;
             _position.Y = _map.TileSize.Y * slot.RowIndex;
 
@@ -157,55 +164,7 @@ namespace MonoGamePhysicsTest
             }
 
             var slot = maybeSlot.Value;
-            switch (_state)
-            {
-                case PlayDirection.Vertical:
-                    _map.SetAt(slot, true);
-                    goDividerUp(slot);
-                    goDividerDown(slot);
-                    break;
-                case PlayDirection.Up:
-                    _map.SetAt(slot, true);
-                    goDividerUp(slot);
-                    break;
-                case PlayDirection.Down:
-                    _map.SetAt(slot, true);
-                    goDividerDown(slot);
-                    break;
-                case PlayDirection.Horizontal:
-                    _map.SetAt(slot, true);
-                    goDividerLeft(slot);
-                    goDividerRight(slot);
-                    break;
-                case PlayDirection.Left:
-                    _map.SetAt(slot, true);
-                    goDividerLeft(slot);
-                    break;
-                case PlayDirection.Right:
-                    _map.SetAt(slot, true);
-                    goDividerRight(slot);
-                    break;
-            }
-        }
-
-        private void goDividerDown(TileSlot slot)
-        {
-            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.Y, true, _dividerTexture ));
-        }
-
-        private void goDividerUp(TileSlot slot)
-        {
-            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.Y, false, _dividerTexture ));
-        }
-
-        private void goDividerLeft(TileSlot slot)
-        {
-            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.X, false, _dividerTexture ));
-        }
-
-        private void goDividerRight(TileSlot slot)
-        {
-            _dividers.Add(new Divider(_map, slot, BallPhysics.Axis.X, true, _dividerTexture ));
+            _dividers.Add(new Divider(_map, _dividerTexture, slot, _state));
         }
     }
 

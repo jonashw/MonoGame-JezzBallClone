@@ -156,3 +156,9 @@
 /processorParam:TextureFormat=Color
 /build:Cursor-Disabled.png
 
+#begin Consolas.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Consolas.spritefont
+

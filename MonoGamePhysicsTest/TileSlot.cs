@@ -5,6 +5,7 @@ namespace MonoGamePhysicsTest
 {
     public struct TileSlot
     {
+        public const int Size = 10;
         public int ColumnIndex;
         public int RowIndex;
 
@@ -12,6 +13,13 @@ namespace MonoGamePhysicsTest
         {
             ColumnIndex = columnIndex;
             RowIndex = rowIndex;
+        }
+
+        public Vector2 ToPosition()
+        {
+            return new Vector2(
+                ColumnIndex*Size,
+                RowIndex*Size);
         }
 
         public TileSlot? Next(BallPhysics.Axis axis, bool positive)
@@ -30,7 +38,6 @@ namespace MonoGamePhysicsTest
             return TryCreate(nextCol, nextRow);
         }
 
-        public const int TileSize = 10;
         public static TileSlot? TryCreate(int column, int row)
         {
             if (row < 0 || row >= 72)
@@ -46,15 +53,15 @@ namespace MonoGamePhysicsTest
 
         public static TileSlot? TryGetForPosition(Vector2 position)
         {
-            var colIndex = (int) (position.X/TileSize);
-            var rowIndex = (int) (position.Y/TileSize);
+            var colIndex = (int) (position.X/Size);
+            var rowIndex = (int) (position.Y/Size);
             return TryCreate(colIndex, rowIndex);
         }
 
         public static TileSlot? TryGetForPosition(int x, int y)
         {
-            var colIndex = x/TileSize;
-            var rowIndex = y/TileSize;
+            var colIndex = x/Size;
+            var rowIndex = y/Size;
             return TryCreate(colIndex, rowIndex);
         }
     }
