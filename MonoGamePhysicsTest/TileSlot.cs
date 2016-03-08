@@ -1,11 +1,15 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Diagnostics.Contracts;
+using Microsoft.Xna.Framework;
 using MonoGamePhysicsTest.Physics;
 
 namespace MonoGamePhysicsTest
 {
     public struct TileSlot
     {
+        public const int RowCount = 72;
+        public const int ColumnCount = 128;
         public const int Size = 10;
+
         public int ColumnIndex;
         public int RowIndex;
 
@@ -15,6 +19,10 @@ namespace MonoGamePhysicsTest
             RowIndex = rowIndex;
         }
 
+        public static readonly TileSlot TopRightSlot = new TileSlot(ColumnCount - 1, 0);
+        public static readonly Vector2 TopRightPosition = TopRightSlot.ToPosition();
+
+        [Pure]
         public Vector2 ToPosition()
         {
             return new Vector2(
@@ -40,11 +48,11 @@ namespace MonoGamePhysicsTest
 
         public static TileSlot? TryCreate(int column, int row)
         {
-            if (row < 0 || row >= 72)
+            if (row < 0 || row >= RowCount)
             {
                 return null;
             }
-            if (column < 0 || column >= 128)
+            if (column < 0 || column >= ColumnCount)
             {
                 return null;
             }

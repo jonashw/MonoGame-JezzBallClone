@@ -29,12 +29,18 @@ namespace MonoGamePhysicsTest
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            _stringDrawer.Draw(spriteBatch, string.Format("Cursor Position: {0}, {1}", _slot.ColumnIndex, _slot.RowIndex), new Vector2(20,20));
+            drawDebugInfo(spriteBatch);
             spriteBatch.Draw(getTexture(), _position, origin: _origin );
             foreach (var d in _dividers)
             {
                 d.Draw(spriteBatch);
             }
+        }
+
+        private void drawDebugInfo(SpriteBatch spriteBatch)
+        {
+            _stringDrawer.Draw(spriteBatch, string.Format("Cursor Position: {0}, {1}", _slot.ColumnIndex, _slot.RowIndex), new Vector2(20,20));
+            _stringDrawer.Draw(spriteBatch, string.Format("Dividers in-progress: {0}", _dividers.Count), TileSlot.TopRightPosition - new Vector2(230, -20));
         }
 
         private readonly List<Divider> _dividersToRemove = new List<Divider>();
