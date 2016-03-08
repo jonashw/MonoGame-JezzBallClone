@@ -8,10 +8,9 @@ namespace MonoGamePhysicsTest.Input
     public class MouseEvents
     {
         private readonly GameWindow _window;
-        private readonly List<Action<int,int>> _leftHandlers = new List<Action<int,int>>();
-        private readonly List<Action<int,int>> _rightHandlers = new List<Action<int,int>>();
-        private ButtonState _left = ButtonState.Released;
-        private ButtonState _right = ButtonState.Released;
+        private readonly MouseButtonEvents _rightButtonEvents = new MouseButtonEvents();
+        private readonly MouseButtonEvents _leftButtonEvents = new MouseButtonEvents();
+        private readonly MouseButtonEvents _middleButtonEvents = new MouseButtonEvents();
 
         public MouseEvents(GameWindow window)
         {
@@ -21,47 +20,55 @@ namespace MonoGamePhysicsTest.Input
         public void Update(GameTime gameTime)
         {
             var state = Mouse.GetState(_window);
-            if (_left == ButtonState.Released)
-            {
-                if (state.LeftButton == ButtonState.Pressed)
-                {
-                    foreach (var h in _leftHandlers)
-                    {
-                        h(state.X, state.Y);
-                    }
-                    _left = ButtonState.Pressed;
-                }
-            }
-            else if (state.LeftButton == ButtonState.Released)
-            {
-                _left = ButtonState.Released;
-            }
-
-            if (_right == ButtonState.Released)
-            {
-                if (state.RightButton == ButtonState.Pressed)
-                {
-                    foreach (var h in _rightHandlers)
-                    {
-                        h(state.X, state.Y);
-                    }
-                    _right = ButtonState.Pressed;
-                }
-            }
-            else if (state.RightButton == ButtonState.Released)
-            {
-                _right = ButtonState.Released;
-            }
+            _rightButtonEvents.Update(state.RightButton, state.X, state.Y);
+            _leftButtonEvents.Update(state.LeftButton, state.X, state.Y);
+            _middleButtonEvents.Update(state.MiddleButton, state.X, state.Y);
         }
 
         public void OnLeftClick(Action<int,int> handler)
         {
-            _leftHandlers.Add(handler);
+            _leftButtonEvents.OnClick(handler);
         }
 
         public void OnRightClick(Action<int, int> handler)
         {
-            _rightHandlers.Add(handler);
+            _rightButtonEvents.OnClick(handler);
+        }
+
+        public void OnMiddleClick(Action<int, int> handler)
+        {
+            _middleButtonEvents.OnClick(handler);
+        }
+
+        private class MouseButtonEvents
+        {
+            private ButtonState _lastState = ButtonState.Released;
+            private readonly List<Action<int,int>> _handlers = new List<Action<int,int>>();
+
+            public void Update(ButtonState nextState, int x, int y)
+            {
+                if (_lastState == ButtonState.Released)
+                {
+                    if (nextState != ButtonState.Pressed)
+                    {
+                        return;
+                    }
+                    foreach (var h in _handlers)
+                    {
+                        h(x, y);
+                    }
+                    _lastState = ButtonState.Pressed;
+                }
+                else if (nextState == ButtonState.Released)
+                {
+                    _lastState = ButtonState.Released;
+                }
+            }
+
+            public void OnClick(Action<int, int> handler)
+            {
+                _handlers.Add(handler);
+            }
         }
     }
 }

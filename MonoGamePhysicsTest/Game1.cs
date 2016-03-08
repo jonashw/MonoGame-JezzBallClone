@@ -56,6 +56,17 @@ namespace MonoGamePhysicsTest
                 Content.Load<Texture2D>("Tile-GrayBlack"),
                 _stringDrawer);
 
+            _mouse.OnMiddleClick((x, y) =>
+            {
+                var maybeSlot = TileSlot.TryGetForPosition(x, y);
+                if (!maybeSlot.HasValue)
+                {
+                    return;
+                }
+                var slot = maybeSlot.Value;
+                _map.SetAt(slot, true);
+            });
+
             _mouse.OnRightClick((x,y) => _cursor.ToggleAxis());
 
             var ballTexture = new
