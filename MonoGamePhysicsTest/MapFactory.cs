@@ -5,10 +5,12 @@ namespace MonoGamePhysicsTest
 {
     public static class MapFactory
     {
+        private static readonly ILogger Logger = new DebugLogger();
         public static Map BasicRectangle(ContentManager content)
         {
             return new Map(
                 content.Load<Texture2D>("Tile-White"),
+                Logger,
                 new bool[72, 128]
                 {
 {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true },

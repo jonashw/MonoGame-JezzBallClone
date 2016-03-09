@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -8,9 +9,9 @@ namespace MonoGamePhysicsTest.Input
     public class MouseEvents
     {
         private readonly GameWindow _window;
-        private readonly MouseButtonEvents _rightButtonEvents = new MouseButtonEvents();
-        private readonly MouseButtonEvents _leftButtonEvents = new MouseButtonEvents();
-        private readonly MouseButtonEvents _middleButtonEvents = new MouseButtonEvents();
+        private readonly MouseButtonEvents _right = new MouseButtonEvents();
+        private readonly MouseButtonEvents _left = new MouseButtonEvents();
+        private readonly MouseButtonEvents _middle = new MouseButtonEvents();
 
         public MouseEvents(GameWindow window)
         {
@@ -20,24 +21,24 @@ namespace MonoGamePhysicsTest.Input
         public void Update(GameTime gameTime)
         {
             var state = Mouse.GetState(_window);
-            _rightButtonEvents.Update(state.RightButton, state.X, state.Y);
-            _leftButtonEvents.Update(state.LeftButton, state.X, state.Y);
-            _middleButtonEvents.Update(state.MiddleButton, state.X, state.Y);
+            _right .Update(state.RightButton,  state.X, state.Y);
+            _left  .Update(state.LeftButton,   state.X, state.Y);
+            _middle.Update(state.MiddleButton, state.X, state.Y);
         }
 
         public void OnLeftClick(Action<int,int> handler)
         {
-            _leftButtonEvents.OnClick(handler);
+            _left.OnClick(handler);
         }
 
         public void OnRightClick(Action<int, int> handler)
         {
-            _rightButtonEvents.OnClick(handler);
+            _right.OnClick(handler);
         }
 
         public void OnMiddleClick(Action<int, int> handler)
         {
-            _middleButtonEvents.OnClick(handler);
+            _middle.OnClick(handler);
         }
 
         private class MouseButtonEvents

@@ -17,8 +17,12 @@ namespace MonoGamePhysicsTest
         private Map _map;
         private Ball[] _balls;
         private readonly MouseEvents _mouse;
+        private readonly KeyboardEvents _keyboard = new KeyboardEvents();
         private Cursor _cursor;
         private StringDrawer _stringDrawer;
+        private readonly ILogger _logger = new DebugLogger();
+        private EdgeTracer _edgeTracer = null;
+        private Texture2D _tracterTexture;
 
         public Game1()
         {
@@ -36,8 +40,11 @@ namespace MonoGamePhysicsTest
         protected override void Initialize()
         {
             _mouse.OnLeftClick((x,y) => _cursor.StartDivider());
+            _keyboard.OnPress(Keys.Space, () => _playing = !_playing);
             base.Initialize();
         }
+
+        private bool _playing = true;
 
         protected override void LoadContent()
         {
@@ -56,6 +63,7 @@ namespace MonoGamePhysicsTest
                 Content.Load<Texture2D>("Tile-GrayBlack"),
                 _stringDrawer);
 
+            _tracterTexture = Content.Load<Texture2D>("Tile-GrayBlack");
             _mouse.OnMiddleClick((x, y) =>
             {
                 var maybeSlot = TileSlot.TryGetForPosition(x, y);
@@ -63,8 +71,8 @@ namespace MonoGamePhysicsTest
                 {
                     return;
                 }
-                var slot = maybeSlot.Value;
-                _map.SetAt(slot, true);
+                _edgeTracer = new EdgeTracer(_map, maybeSlot.Value, _logger, _tracterTexture);
+                _edgeTracer.Start();
             });
 
             _mouse.OnRightClick((x,y) => _cursor.ToggleAxis());
@@ -117,10 +125,27 @@ namespace MonoGamePhysicsTest
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            _keyboard.Update(Keyboard.GetState());
+            _mouse.Update(gameTime);
+
+            if (!_playing)
+            {
+                return;
+            }
+
             _cursor.Update(gameTime);
             foreach (var ball in _balls)
             {
                 ball.Update(gameTime);
+            }
+
+            if (_edgeTracer != null)
+            {
+                _edgeTracer.Update();
+                if (_edgeTracer.State == EdgeTracer.TracerState.Finished)
+                {
+                    _edgeTracer = null;
+                }
             }
 
             base.Update(gameTime);
@@ -130,15 +155,31 @@ namespace MonoGamePhysicsTest
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(_backgroundColor);
-            _mouse.Update(gameTime);
 
             _spriteBatch.Begin();
+
+
             _map.Draw(_spriteBatch);
+
+            if (_edgeTracer != null)
+            {
+                _edgeTracer.Draw(_spriteBatch);
+                _stringDrawer.Draw(_spriteBatch,
+                    string.Format("Edge Tracer{{Starting Slot: ({0},{1}), Last Slot: ({2},{3})}}",
+                        _edgeTracer.FirstEdgeSlot.ColumnIndex,
+                        _edgeTracer.FirstEdgeSlot.RowIndex,
+                        _edgeTracer.PreviousSlot.ColumnIndex,
+                        _edgeTracer.PreviousSlot.RowIndex),
+                    TileSlot.BottomRightPosition - new Vector2(520, 30));
+            }
             _cursor.Draw(_spriteBatch);
+
             foreach (var ball in _balls)
             {
                 ball.Draw(_spriteBatch);
             }
+            _stringDrawer.Draw(_spriteBatch, "Percent Filled: " + _map.GetFillPercent().ToString("F2"), TileSlot.BottomLeftPosition + new Vector2(20,-20));
+
             _spriteBatch.End();
 
             base.Draw(gameTime);

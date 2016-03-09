@@ -14,4 +14,11 @@ namespace MonoGamePhysicsTest
             Debug.WriteLine(message);
         }
     }
+
+    public class NullLogger : ILogger
+    {
+        public void Log(string message)
+        {
+        }
+    }
 }

@@ -47,10 +47,13 @@
     <Compile Include="DividerLegState.cs" />
     <Compile Include="DividerState.cs" />
     <Compile Include="DividerTextures.cs" />
+    <Compile Include="EdgeTracer.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="ILogger.cs" />
+    <Compile Include="Input\KeyboardEvents.cs" />
     <Compile Include="Input\MouseEvents.cs" />
     <Compile Include="MapFactory.cs" />
+    <Compile Include="MooreNeighborRelation.cs" />
     <Compile Include="Physics\BallPhyics.cs" />
     <Compile Include="Physics\IBallPhysics.cs" />
     <Compile Include="Program.cs" />
